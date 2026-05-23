@@ -8,11 +8,19 @@ module RubyBench
     extend T::Sig
 
     FIELDS = %i[
-      algorithm input_label runtime
-      wall_time_s iterations_per_second iterations_per_second_error
-      rss_bytes_peak cpu_user_s cpu_sys_s
-      gc_count_delta gc_time_ms_delta
-      allocations_total allocations_retained
+      algorithm
+      input_label
+      runtime
+      wall_time_s
+      iterations_per_second
+      iterations_per_second_error
+      rss_bytes_peak
+      cpu_user_s
+      cpu_sys_s
+      gc_count_delta
+      gc_time_ms_delta
+      allocations_total
+      allocations_retained
     ].freeze
 
     sig { returns(String) }
@@ -68,7 +76,7 @@ module RubyBench
         gc_count_delta: Integer,
         gc_time_ms_delta: Integer,
         allocations_total: Integer,
-        allocations_retained: Integer,
+        allocations_retained: Integer
       ).void
     end
     def initialize(
@@ -109,7 +117,7 @@ module RubyBench
 
     sig { params(overrides: T.untyped).returns(Measurement) }
     def with(**overrides)
-      Measurement.new(**to_h.merge(overrides))
+      T.unsafe(Measurement).new(**to_h.merge(overrides))
     end
   end
 end

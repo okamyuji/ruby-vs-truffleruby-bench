@@ -19,7 +19,7 @@ module RubyBench
         schema_version: 1,
         generated_at: Time.now.utc.iso8601,
         runtime_metadata: Runtime.metadata,
-        measurements: @measurements.map(&:to_h),
+        measurements: @measurements.map(&:to_h)
       }
     end
 

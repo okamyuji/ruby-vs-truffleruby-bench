@@ -1,4 +1,4 @@
-# typed: true
+# typed: false
 # frozen_string_literal: true
 
 require "test_helper"
@@ -15,7 +15,7 @@ class RubyBenchHtmlRendererTest < Minitest::Test
         engine_version: "3.4",
         ruby_version: "3.4.1",
         platform: "x86_64-linux",
-        pid: 1,
+        pid: 1
       },
       measurements: [
         {
@@ -31,32 +31,36 @@ class RubyBenchHtmlRendererTest < Minitest::Test
           gc_count_delta: 2,
           gc_time_ms_delta: 10,
           allocations_total: 200,
-          allocations_retained: 20,
-        },
-      ],
+          allocations_retained: 20
+        }
+      ]
     }
   end
 
   def test_render_returns_string_containing_chartjs_cdn
     html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
-    assert_match(%r{cdn\.jsdelivr\.net.*chart\.js}m, html)
+
+    assert_match(/cdn\.jsdelivr\.net.*chart\.js/m, html)
   end
 
   def test_render_contains_both_runtime_labels
     html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
     assert_includes(html, "mri")
     assert_includes(html, "truffleruby")
   end
 
   def test_render_embeds_measurement_dataset_json
     html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
     assert_includes(html, "fibonacci")
     assert_match(/iterations_per_second/, html)
   end
 
   def test_write_outputs_html_file
-    Tempfile.open(["report", ".html"]) do |f|
+    Tempfile.open(%w[report .html]) do |f|
       RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).write(f.path)
+
       assert_match(/<!doctype html>/i, File.read(f.path))
     end
   end

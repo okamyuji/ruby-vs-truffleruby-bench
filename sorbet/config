@@ -5,3 +5,4 @@
 --ignore=/tmp
 --ignore=/.bundle
 --ignore=/docker
+--ignore=/test

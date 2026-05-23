@@ -1,0 +1,70 @@
+name: ruby-vs-truffleruby-bench CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ruby-vs-truffleruby-bench/**"
+  pull_request:
+    paths:
+      - "ruby-vs-truffleruby-bench/**"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality gates (MRI)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ruby-vs-truffleruby-bench
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.1"
+          bundler-cache: true
+          working-directory: ruby-vs-truffleruby-bench
+      - name: syntax_tree check
+        run: bundle exec stree check 'lib/**/*.rb' 'test/**/*.rb'
+      - name: RuboCop
+        run: bundle exec rubocop
+      - name: Sorbet typecheck
+        run: bundle exec srb tc
+      - name: Minitest
+        run: bundle exec rake test
+
+  docker-build:
+    name: Docker build (both runtimes)
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        working-directory: ruby-vs-truffleruby-bench
+        run: docker compose build
+
+  smoke-bench:
+    name: Smoke bench (matrix)
+    runs-on: ubuntu-latest
+    needs: docker-build
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [ruby34, truffleruby34]
+    env:
+      RVTB_RUNTIME: ${{ matrix.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build target image
+        working-directory: ruby-vs-truffleruby-bench
+        run: docker compose build "$RVTB_RUNTIME"
+      - name: Run smoke bench
+        working-directory: ruby-vs-truffleruby-bench
+        run: docker compose run --rm "$RVTB_RUNTIME" bundle exec bin/bench --smoke -o "results/$RVTB_RUNTIME.json"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.runtime }}
+          path: ruby-vs-truffleruby-bench/results/${{ matrix.runtime }}.json

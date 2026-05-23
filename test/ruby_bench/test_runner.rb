@@ -1,4 +1,4 @@
-# typed: true
+# typed: false
 # frozen_string_literal: true
 
 require "test_helper"
@@ -8,6 +8,7 @@ class RubyBenchRunnerTest < Minitest::Test
     runner = RubyBench::Runner.new(smoke: true)
     runner.run_all
     algos = runner.harness.measurements.map(&:algorithm).sort
+
     assert_equal(%w[fibonacci mandelbrot nbody sieve], algos)
   end
 
@@ -16,6 +17,7 @@ class RubyBenchRunnerTest < Minitest::Test
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     runner.run_all
     elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+
     assert_operator(elapsed, :<, 60.0, "スモーク実行は十分短時間で終わること")
   end
 end

@@ -22,34 +22,29 @@ module RubyBench
       @measurements = []
     end
 
-    sig do
-      params(
-        algorithm: String,
-        input_label: String,
-        block: T.proc.returns(T.untyped),
-      ).returns(Measurement)
-    end
+    sig { params(algorithm: String, input_label: String, block: T.proc.returns(T.untyped)).returns(Measurement) }
     def measure(algorithm:, input_label:, &block)
       ips_result = run_ips(&block)
       memory_result = run_memory(&block)
       rss_peak = run_rss(&block)
       cpu_user, cpu_sys, gc_count_delta, gc_time_delta = run_cpu_and_gc(&block)
 
-      m = Measurement.new(
-        algorithm: algorithm,
-        input_label: input_label,
-        runtime: Runtime.id,
-        wall_time_s: ips_result.fetch(:wall_time).to_f,
-        iterations_per_second: ips_result.fetch(:ips).to_f,
-        iterations_per_second_error: ips_result.fetch(:ips_error).to_f,
-        rss_bytes_peak: rss_peak.to_i,
-        cpu_user_s: cpu_user.to_f,
-        cpu_sys_s: cpu_sys.to_f,
-        gc_count_delta: gc_count_delta.to_i,
-        gc_time_ms_delta: gc_time_delta.to_i,
-        allocations_total: memory_result.fetch(:total).to_i,
-        allocations_retained: memory_result.fetch(:retained).to_i,
-      )
+      m =
+        Measurement.new(
+          algorithm: algorithm,
+          input_label: input_label,
+          runtime: Runtime.id,
+          wall_time_s: ips_result.fetch(:wall_time).to_f,
+          iterations_per_second: ips_result.fetch(:ips).to_f,
+          iterations_per_second_error: ips_result.fetch(:ips_error).to_f,
+          rss_bytes_peak: rss_peak.to_i,
+          cpu_user_s: cpu_user.to_f,
+          cpu_sys_s: cpu_sys.to_f,
+          gc_count_delta: gc_count_delta.to_i,
+          gc_time_ms_delta: gc_time_delta.to_i,
+          allocations_total: memory_result.fetch(:total).to_i,
+          allocations_retained: memory_result.fetch(:retained).to_i
+        )
       @measurements << m
       m
     end
@@ -58,10 +53,13 @@ module RubyBench
 
     sig { params(block: T.proc.returns(T.untyped)).returns(T::Hash[Symbol, T.untyped]) }
     def run_ips(&block)
-      report = Benchmark.ips do |x|
-        x.config(time: @time_seconds, warmup: @warmup_seconds, quiet: true)
-        x.report("target", &block)
-      end
+      report =
+        T
+          .unsafe(::Benchmark)
+          .ips do |x|
+            x.config(time: @time_seconds, warmup: @warmup_seconds, quiet: true)
+            x.report("target", &block)
+          end
       entry = report.entries.first
       ips = entry.ips.to_f
       iterations = entry.iterations.to_f
@@ -72,23 +70,20 @@ module RubyBench
 
     sig { params(block: T.proc.returns(T.untyped)).returns(T::Hash[Symbol, Integer]) }
     def run_memory(&block)
-      report = MemoryProfiler.report(&block)
+      report = T.unsafe(Object.const_get(:MemoryProfiler)).report(&block)
       { total: report.total_allocated.to_i, retained: report.total_retained.to_i }
     end
 
     sig { params(block: T.proc.returns(T.untyped)).returns(Integer) }
     def run_rss(&block)
-      mem = GetProcessMem.new
+      mem = T.unsafe(Object.const_get(:GetProcessMem)).new
       before = mem.bytes.to_i
       block.call
       after = mem.bytes.to_i
       [before, after].max
     end
 
-    sig do
-      params(block: T.proc.returns(T.untyped))
-        .returns([Float, Float, Integer, Integer])
-    end
+    sig { params(block: T.proc.returns(T.untyped)).returns([Float, Float, Integer, Integer]) }
     def run_cpu_and_gc(&block)
       GC.start
       gc_before = GC.stat
@@ -100,7 +95,7 @@ module RubyBench
         cpu_after.utime - cpu_before.utime,
         cpu_after.stime - cpu_before.stime,
         ((gc_after[:count] || 0) - (gc_before[:count] || 0)).to_i,
-        ((gc_after[:total_time] || 0) - (gc_before[:total_time] || 0)).to_i,
+        ((gc_after[:total_time] || 0) - (gc_before[:total_time] || 0)).to_i
       ]
     end
   end

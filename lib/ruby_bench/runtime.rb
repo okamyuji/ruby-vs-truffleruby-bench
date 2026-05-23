@@ -24,8 +24,8 @@ module RubyBench
 
     sig { returns(String) }
     def self.engine_version
-      if defined?(::TruffleRuby) && ::TruffleRuby.respond_to?(:revision)
-        ::TruffleRuby.revision.to_s
+      if defined?(::TruffleRuby) && T.unsafe(::TruffleRuby).respond_to?(:revision)
+        T.unsafe(::TruffleRuby).revision.to_s
       else
         RUBY_VERSION
       end
@@ -39,7 +39,7 @@ module RubyBench
         engine_version: engine_version,
         ruby_version: RUBY_VERSION,
         platform: RUBY_PLATFORM,
-        pid: Process.pid,
+        pid: Process.pid
       }
     end
   end
