@@ -10,6 +10,7 @@ gem "memory_profiler", "~> 1.1"
 gem "get_process_mem", "~> 1.0"
 
 # Test
+gem "rake", "~> 13.2"
 gem "minitest", "~> 5.25"
 gem "minitest-reporters", "~> 1.7"
 

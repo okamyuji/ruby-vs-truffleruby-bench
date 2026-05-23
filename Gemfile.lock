@@ -37,6 +37,7 @@ GEM
     prism (1.9.0)
     racc (1.8.1)
     rainbow (3.1.1)
+    rake (13.4.2)
     rbi (0.3.12)
       prism (~> 1.0)
       rbs (>= 4.0.1)
@@ -128,6 +129,7 @@ DEPENDENCIES
   memory_profiler (~> 1.1)
   minitest (~> 5.25)
   minitest-reporters (~> 1.7)
+  rake (~> 13.2)
   rubocop (~> 1.68)
   rubocop-minitest (~> 0.36)
   rubocop-performance (~> 1.22)
@@ -166,6 +168,7 @@ CHECKSUMS
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
   racc (1.8.1) sha256=4a7f6929691dbec8b5209a0b373bc2614882b55fc5d2e447a21aaa691303d62f
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
+  rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
   rbi (0.3.12) sha256=406ea58265942e7f2316744a11de742fdef8b2325bb6066c71c9765f53298eb2
   rbs (4.0.2) sha256=af75671e66cd03434cc546622741ebf83f6197ec4328375805306330bf78ef25
   regexp_parser (2.12.0) sha256=35a916a1d63190ab5c9009457136ae5f3c0c7512d60291d0d1378ba18ce08ebb

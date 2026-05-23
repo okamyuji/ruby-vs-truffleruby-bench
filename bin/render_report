@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# typed: true
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+require "ruby_bench"
+
+if ARGV.size < 3
+  warn "Usage: bin/render_report <mri.json> <truffleruby.json> <output.html>"
+  exit 1
+end
+
+mri_path, truffleruby_path, output_path = ARGV
+payloads = [mri_path, truffleruby_path].map { |p| RubyBench::Reporter.load(p) }
+RubyBench::HtmlRenderer.new(payloads).write(output_path)
+puts "wrote #{output_path}"

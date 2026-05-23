@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+# typed: true
+# frozen_string_literal: true
+
+require "optparse"
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+require "ruby_bench"
+
+options = { smoke: false, output: ENV.fetch("RUBY_BENCH_RESULT_PATH", "results/#{RubyBench::Runtime.id}.json") }
+
+OptionParser.new do |o|
+  o.banner = "Usage: bin/bench [options]"
+  o.on("--smoke", "短時間のスモーク実行") { options[:smoke] = true }
+  o.on("-o", "--output PATH", "出力 JSON のパス") { |v| options[:output] = v }
+end.parse!
+
+runner = RubyBench::Runner.new(smoke: options[:smoke])
+runner.run_all
+
+RubyBench::Reporter.new(runner.harness.measurements).dump(options[:output])
+puts "wrote #{options[:output]}"
