@@ -85,27 +85,35 @@ module RubyBench
 
     # run_rss バックグラウンドスレッドで定期的に RSS をサンプリングし、ブロック実行中の最大値を返します。
     # before/after の二点観測ではなく実行中ピークを捉えるために必要な計測です。
+    # メインスレッドとサンプラースレッド間の peak/stop 共有は Mutex で同期します。
     sig { params(block: T.proc.returns(T.untyped)).returns(Integer) }
     def run_rss(&block)
       mem = T.unsafe(Object.const_get(:GetProcessMem)).new
+      mutex = Mutex.new
       peak = T.let(mem.bytes.to_i, Integer)
       stop = T.let(false, T::Boolean)
+
       sampler =
         Thread.new do
-          until stop
+          loop do
+            break if mutex.synchronize { stop }
+
             current = mem.bytes.to_i
-            peak = current if current > peak
+            mutex.synchronize { peak = current if current > peak }
             sleep(0.01)
           end
         end
+
       begin
         block.call
-        peak = [peak, mem.bytes.to_i].max
+        current = mem.bytes.to_i
+        mutex.synchronize { peak = current if current > peak }
       ensure
-        stop = true
+        mutex.synchronize { stop = true }
         sampler.join
       end
-      peak
+
+      mutex.synchronize { peak }
     end
 
     sig { params(block: T.proc.returns(T.untyped)).returns([Float, Float, Integer, Integer]) }

@@ -23,4 +23,4 @@ pre-push:
     docker-build:
       run: docker compose build
     bench-smoke:
-      run: bundle exec bin/bench --smoke -o results/smoke.json
+      run: mkdir -p results && bundle exec bin/bench --smoke -o results/smoke.json

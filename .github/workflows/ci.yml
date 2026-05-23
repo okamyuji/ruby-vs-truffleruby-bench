@@ -57,6 +57,8 @@ jobs:
       RVTB_RUNTIME: ${{ matrix.runtime }}
     steps:
       - uses: actions/checkout@v4
+      # docker-build ジョブの成果イメージは別 runner にあるため、matrix runner では再度 build が必要です。
+      # registry や buildx cache を導入していないため、現状はジョブ間で重複ビルドを許容しています。
       - name: Build target image
         working-directory: ruby-vs-truffleruby-bench
         run: docker compose build "$RVTB_RUNTIME"
