@@ -43,6 +43,13 @@ class RubyBenchHtmlRendererTest < Minitest::Test
     assert_match(/cdn\.jsdelivr\.net.*chart\.js/m, html)
   end
 
+  def test_render_includes_sri_integrity_attribute
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(%r{integrity="sha384-[A-Za-z0-9+/]+=*"}, html)
+    assert_match(/crossorigin="anonymous"/, html)
+  end
+
   def test_render_contains_both_runtime_labels
     html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
 

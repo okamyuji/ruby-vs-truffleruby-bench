@@ -13,6 +13,9 @@ module RubyBench
     end
 
     CHARTJS_CDN = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+    # CHARTJS_SRI は chart.js@4.5.1/dist/chart.umd.min.js の SHA-384 ハッシュ。
+    # 検証手順: curl -sL <CHARTJS_CDN> | openssl dgst -sha384 -binary | openssl base64 -A
+    CHARTJS_SRI = "sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
 
     sig { params(payloads: T::Array[T::Hash[Symbol, T.untyped]]).void }
     def initialize(payloads)
@@ -30,7 +33,7 @@ module RubyBench
         <head>
           <meta charset="utf-8" />
           <title>Ruby 3.4 vs TruffleRuby 3.4 ベンチマークレポート</title>
-          <script src="#{CHARTJS_CDN}"></script>
+          <script src="#{CHARTJS_CDN}" integrity="#{CHARTJS_SRI}" crossorigin="anonymous"></script>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; margin: 24px; color: #1f2937; }
             h1 { font-size: 22px; }

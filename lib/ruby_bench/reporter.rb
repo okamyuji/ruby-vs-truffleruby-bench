@@ -29,10 +29,17 @@ module RubyBench
 
     sig { params(path: String).void }
     def dump(path)
-      FileUtils.mkdir_p(File.dirname(path))
-      File.binwrite(path, JSON.pretty_generate(payload))
-    rescue SystemCallError => e
-      raise IOFailure, "結果 JSON の書き込みに失敗しました path=#{path} cause=#{e.class}: #{e.message}"
+      begin
+        FileUtils.mkdir_p(File.dirname(path))
+      rescue SystemCallError => e
+        raise IOFailure, "結果 JSON 用ディレクトリの作成に失敗しました path=#{path} cause=#{e.class}: #{e.message}"
+      end
+
+      begin
+        File.binwrite(path, JSON.pretty_generate(payload))
+      rescue SystemCallError => e
+        raise IOFailure, "結果 JSON の書き込みに失敗しました path=#{path} cause=#{e.class}: #{e.message}"
+      end
     end
 
     sig { params(path: String).returns(T::Hash[Symbol, T.untyped]) }
