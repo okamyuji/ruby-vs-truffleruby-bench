@@ -1,0 +1,32 @@
+# Ruby
+*.gem
+*.rbc
+/.bundle/
+/.config
+/.yardoc
+/Gemfile.lock.bak
+/_yardoc/
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.byebug_history
+
+# Docker
+.docker/
+
+# Sorbet
+sorbet/rbi/sorbet-typed/
+sorbet/rbi/todo.rbi
+sorbet/tapioca/require.rb
+
+# Bench outputs
+/results/*.json
+/results/*.html
+!/results/.gitkeep
+
+# OS
+.DS_Store
