@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "cgi"
 
 module RubyBench
   class HtmlRenderer
@@ -16,8 +17,9 @@ module RubyBench
 
     sig { returns(String) }
     def render
-      data_json = @payloads.to_json
-      pretty = JSON.pretty_generate(@payloads)
+      # </script> 文字列分割で script 終端注入を防ぎ、生 JSON は別の application/json タグに格納する
+      data_json = JSON.generate(@payloads).gsub("</", "<\\/")
+      pretty = CGI.escapeHTML(JSON.pretty_generate(@payloads))
       <<~HTML
         <!doctype html>
         <html lang="ja">
@@ -51,8 +53,9 @@ module RubyBench
             <summary>収集データ(クリックで展開)</summary>
             <pre id="raw-data">#{pretty}</pre>
           </details>
+          <script id="payloads-json" type="application/json">#{data_json}</script>
           <script>
-            const payloads = #{data_json};
+            const payloads = JSON.parse(document.getElementById("payloads-json").textContent);
             const algorithms = Array.from(new Set(payloads.flatMap(p => p.measurements.map(m => m.algorithm))));
             const palette = { mri: "#ef4444", truffleruby: "#3b82f6" };
             const datasetsFor = (metric) => payloads.map(p => ({

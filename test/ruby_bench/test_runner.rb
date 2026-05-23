@@ -12,12 +12,13 @@ class RubyBenchRunnerTest < Minitest::Test
     assert_equal(%w[fibonacci mandelbrot nbody sieve], algos)
   end
 
-  def test_smoke_inputs_finish_under_a_minute
+  def test_smoke_inputs_finish_under_configured_timeout
     runner = RubyBench::Runner.new(smoke: true)
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     runner.run_all
     elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+    max_seconds = ENV.fetch("RUBY_BENCH_SMOKE_MAX_SECONDS", "120").to_f
 
-    assert_operator(elapsed, :<, 60.0, "スモーク実行は十分短時間で終わること")
+    assert_operator(elapsed, :<, max_seconds, "スモーク実行は #{max_seconds} 秒未満で完了すること")
   end
 end

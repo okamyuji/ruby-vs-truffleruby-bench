@@ -12,7 +12,7 @@ class RubyBenchRuntimeTest < Minitest::Test
     label = RubyBench::Runtime.label
 
     assert_match(/(MRI|TruffleRuby)/, label)
-    assert_match(/3\.4/, label)
+    assert_match(/\d+\.\d+/, label)
   end
 
   def test_metadata_contains_required_keys

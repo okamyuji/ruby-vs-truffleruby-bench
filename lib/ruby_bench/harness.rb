@@ -22,12 +22,14 @@ module RubyBench
       @measurements = []
     end
 
+    # measure 与えられた純粋関数ブロックを4種の独立フェーズで計測します。前提として block は引数を取らず
+    # 外部状態を変更しない冪等なブロックでなければなりません(各フェーズで複数回呼び出されるため)。
     sig { params(algorithm: String, input_label: String, block: T.proc.returns(T.untyped)).returns(Measurement) }
     def measure(algorithm:, input_label:, &block)
-      ips_result = run_ips(&block)
-      memory_result = run_memory(&block)
-      rss_peak = run_rss(&block)
-      cpu_user, cpu_sys, gc_count_delta, gc_time_delta = run_cpu_and_gc(&block)
+      ips_result = isolate { run_ips(&block) }
+      memory_result = isolate { run_memory(&block) }
+      rss_peak = isolate { run_rss(&block) }
+      cpu_user, cpu_sys, gc_count_delta, gc_time_delta = isolate { run_cpu_and_gc(&block) }
 
       m =
         Measurement.new(
@@ -50,6 +52,13 @@ module RubyBench
     end
 
     private
+
+    # isolate 各計測フェーズの直前に GC を1度走らせて初期状態を揃え、計測間の干渉を最小化します。
+    sig { type_parameters(:R).params(block: T.proc.returns(T.type_parameter(:R))).returns(T.type_parameter(:R)) }
+    def isolate(&block)
+      GC.start
+      block.call
+    end
 
     sig { params(block: T.proc.returns(T.untyped)).returns(T::Hash[Symbol, T.untyped]) }
     def run_ips(&block)
@@ -85,7 +94,6 @@ module RubyBench
 
     sig { params(block: T.proc.returns(T.untyped)).returns([Float, Float, Integer, Integer]) }
     def run_cpu_and_gc(&block)
-      GC.start
       gc_before = GC.stat
       cpu_before = Process.times
       block.call
