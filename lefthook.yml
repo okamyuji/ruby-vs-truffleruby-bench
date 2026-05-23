@@ -1,0 +1,21 @@
+pre-commit:
+  parallel: true
+  commands:
+    format-check:
+      glob: "*.rb"
+      run: bundle exec stree check {staged_files}
+    lint:
+      glob: "*.rb"
+      run: bundle exec rubocop --force-exclusion {staged_files}
+    typecheck:
+      run: bundle exec srb tc
+
+pre-push:
+  parallel: false
+  commands:
+    test:
+      run: bundle exec rake test
+    docker-build:
+      run: docker compose build
+    bench-smoke:
+      run: bundle exec bin/bench --smoke -o results/smoke.json

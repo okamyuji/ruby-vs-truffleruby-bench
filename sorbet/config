@@ -1,0 +1,7 @@
+--dir
+.
+--ignore=/sorbet/rbi/gems
+--ignore=/results
+--ignore=/tmp
+--ignore=/.bundle
+--ignore=/docker

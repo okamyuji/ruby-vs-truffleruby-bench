@@ -1,0 +1,34 @@
+services:
+  ruby34:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mri
+    image: ruby-vs-truffleruby-bench/ruby34
+    container_name: rvtb-ruby34
+    working_dir: /work
+    volumes:
+      - .:/work
+      - bundle-mri:/usr/local/bundle
+    environment:
+      RUBY_BENCH_RUNTIME: "mri"
+      RUBY_BENCH_RESULT_PATH: "/work/results/mri.json"
+    command: ["bundle", "exec", "bin/bench"]
+
+  truffleruby34:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.truffleruby
+    image: ruby-vs-truffleruby-bench/truffleruby34
+    container_name: rvtb-truffleruby34
+    working_dir: /work
+    volumes:
+      - .:/work
+      - bundle-truffleruby:/home/truffleruby/.gem
+    environment:
+      RUBY_BENCH_RUNTIME: "truffleruby"
+      RUBY_BENCH_RESULT_PATH: "/work/results/truffleruby.json"
+    command: ["bundle", "exec", "bin/bench"]
+
+volumes:
+  bundle-mri:
+  bundle-truffleruby:

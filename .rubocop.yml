@@ -1,0 +1,59 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "sorbet/rbi/**/*"
+    - "results/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    - "bin/render_report"
+    - "bin/bench"
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Metrics/MethodLength:
+  Max: 60
+
+Metrics/AbcSize:
+  Max: 60
+
+Metrics/BlockLength:
+  Max: 60
+
+Metrics/ClassLength:
+  Max: 250
+
+Metrics/ModuleLength:
+  Max: 250
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+
+Metrics/PerceivedComplexity:
+  Max: 12
+
+Layout/LineLength:
+  Max: 130
+
+Naming/FileName:
+  Exclude:
+    - "bin/bench"
+    - "bin/render_report"
+
+# syntax_tree が整形を担当するため Layout 系の自動整形は最小限にする
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+Layout/FirstHashElementIndentation:
+  Enabled: false

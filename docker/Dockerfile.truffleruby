@@ -1,0 +1,24 @@
+FROM ghcr.io/graalvm/truffleruby-community:24.1.1
+
+ENV LANG=C.UTF-8 \
+    BUNDLE_JOBS=4 \
+    BUNDLE_RETRY=3 \
+    TRUFFLERUBYOPT="--engine.Mode=latency"
+
+USER root
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends build-essential git curl ca-certificates \
+  && rm -rf /var/lib/apt/lists/* \
+  && mkdir -p /work \
+  && chown -R truffleruby:truffleruby /work
+
+USER truffleruby
+WORKDIR /work
+
+COPY --chown=truffleruby:truffleruby Gemfile Gemfile.lock ./
+RUN bundle config set --local without 'development' \
+  && bundle install
+
+COPY --chown=truffleruby:truffleruby . .
+
+CMD ["bundle", "exec", "bin/bench"]
