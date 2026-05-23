@@ -30,7 +30,7 @@ module RubyBench
 
     sig { params(path: String).returns(T::Hash[Symbol, T.untyped]) }
     def self.load(path)
-      JSON.parse(File.read(path), symbolize_names: true)
+      JSON.parse(File.binread(path), symbolize_names: true)
     end
   end
 end

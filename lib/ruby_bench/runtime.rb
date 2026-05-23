@@ -24,11 +24,8 @@ module RubyBench
 
     sig { returns(String) }
     def self.engine_version
-      if defined?(::TruffleRuby) && T.unsafe(::TruffleRuby).respond_to?(:revision)
-        T.unsafe(::TruffleRuby).revision.to_s
-      else
-        RUBY_VERSION
-      end
+      # RUBY_ENGINE_VERSION は MRI でも TruffleRuby でも提供される実装本体のバージョン (例 MRI: 3.4.1, TruffleRuby: 24.1.1)
+      defined?(RUBY_ENGINE_VERSION) ? RUBY_ENGINE_VERSION : RUBY_VERSION
     end
 
     sig { returns(T::Hash[Symbol, T.untyped]) }
