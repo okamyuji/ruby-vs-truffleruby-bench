@@ -124,7 +124,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  benchmark-ips (~> 2.14)
+  benchmark-ips (~> 2.15)
   get_process_mem (~> 1.0)
   memory_profiler (~> 1.1)
   minitest (~> 5.25)

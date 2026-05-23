@@ -5,7 +5,7 @@ source "https://rubygems.org"
 ruby ">= 3.4.0"
 
 # Benchmark stack
-gem "benchmark-ips", "~> 2.14"
+gem "benchmark-ips", "~> 2.15"
 gem "get_process_mem", "~> 1.0"
 gem "memory_profiler", "~> 1.1"
 

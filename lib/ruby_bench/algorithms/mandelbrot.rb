@@ -7,23 +7,22 @@ module RubyBench
       MAX_ITER = 50
       ESCAPE_SQ = 4.0
 
-      # run 幅 width 高さ width の正方領域に対しマンデルブロ反復を実行し、ピクセル数を返します。
+      # run 幅 width 高さ width の正方領域に対しマンデルブロ反復を実行し、全ピクセル合計の反復回数を返します。
       def self.run(width)
         height = width
-        count = 0
+        total_iterations = 0
         y = 0
         while y < height
           ci = (2.0 * y / height) - 1.0
           x = 0
           while x < width
             cr = (2.0 * x / width) - 1.5
-            iterations_at(cr, ci)
-            count += 1
+            total_iterations += iterations_at(cr, ci)
             x += 1
           end
           y += 1
         end
-        count
+        total_iterations
       end
 
       # iterations_at 与えられた複素座標で発散判定までの反復回数を返します。

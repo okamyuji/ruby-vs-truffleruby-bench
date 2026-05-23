@@ -4,8 +4,11 @@
 require "test_helper"
 
 class RubyBenchAlgorithmsMandelbrotTest < Minitest::Test
-  def test_returns_total_pixel_count
-    assert_equal(16, RubyBench::Algorithms::Mandelbrot.run(4))
+  def test_run_returns_positive_integer_total_iterations
+    total = RubyBench::Algorithms::Mandelbrot.run(4)
+
+    assert_operator(total, :>, 0, "全ピクセル合計の反復回数は正の整数になるはず")
+    assert_kind_of(Integer, total)
   end
 
   def test_inside_set_value

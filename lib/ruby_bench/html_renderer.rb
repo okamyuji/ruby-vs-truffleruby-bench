@@ -12,7 +12,7 @@ module RubyBench
     class IOFailure < StandardError
     end
 
-    CHARTJS_CDN = "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
+    CHARTJS_CDN = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
 
     sig { params(payloads: T::Array[T::Hash[Symbol, T.untyped]]).void }
     def initialize(payloads)

@@ -60,6 +60,8 @@ jobs:
       - name: Build target image
         working-directory: ruby-vs-truffleruby-bench
         run: docker compose build "$RVTB_RUNTIME"
+      # -o は docker-compose.yml で設定した RUBY_BENCH_RESULT_PATH を意図的に上書きし、
+      # アーティファクトのアップロードパスを matrix.runtime と一致させるための指定です。
       - name: Run smoke bench
         working-directory: ruby-vs-truffleruby-bench
         run: docker compose run --rm "$RVTB_RUNTIME" bundle exec bin/bench --smoke -o "results/$RVTB_RUNTIME.json"
