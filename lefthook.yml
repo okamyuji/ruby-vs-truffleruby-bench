@@ -1,3 +1,8 @@
+# 設計判断: 「品質ゲートを pre-commit と CI で実行」というプロジェクト要件のもと、
+# fast な checks (format / lint / typecheck) は pre-commit に置き、
+# slow な checks (test / docker-build / bench-smoke) は pre-push に置いて
+# 同じセットを CI でも実行する2段構えにしています。WIP push を急ぎたい場合は
+# `LEFTHOOK=0 git push` または `git push --no-verify` で一時的に skip できます。
 pre-commit:
   parallel: true
   commands:

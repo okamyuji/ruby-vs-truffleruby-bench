@@ -3,10 +3,14 @@
 
 require "json"
 require "cgi"
+require "fileutils"
 
 module RubyBench
   class HtmlRenderer
     extend T::Sig
+
+    class IOFailure < StandardError
+    end
 
     CHARTJS_CDN = "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"
 
@@ -85,7 +89,10 @@ module RubyBench
 
     sig { params(path: String).void }
     def write(path)
+      FileUtils.mkdir_p(File.dirname(path))
       File.binwrite(path, render)
+    rescue SystemCallError => e
+      raise IOFailure, "HTML レポートの書き込みに失敗しました path=#{path} cause=#{e.class}: #{e.message}"
     end
   end
 end

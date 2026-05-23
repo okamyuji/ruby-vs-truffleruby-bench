@@ -27,7 +27,7 @@ jobs:
           bundler-cache: true
           working-directory: ruby-vs-truffleruby-bench
       - name: syntax_tree check
-        run: bundle exec stree check 'lib/**/*.rb' 'test/**/*.rb'
+        run: bundle exec stree check 'lib/**/*.rb' 'test/**/*.rb' 'bin/*'
       - name: RuboCop
         run: bundle exec rubocop
       - name: Sorbet typecheck
