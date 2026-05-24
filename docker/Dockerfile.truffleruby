@@ -1,24 +1,28 @@
 FROM ghcr.io/graalvm/truffleruby-community:24.1.1
 
 ENV LANG=C.UTF-8 \
+    BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_JOBS=4 \
     BUNDLE_RETRY=3 \
+    BUNDLE_WITHOUT=development \
     TRUFFLERUBYOPT="--engine.Mode=latency"
 
-USER root
-RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends build-essential git curl ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /work \
-  && chown -R truffleruby:truffleruby /work
+# Base image is Oracle Linux 9 (dnf-based), and ships gcc/curl but not git/make.
+# Install only the missing build deps for native gem compilation.
+RUN dnf install -y --setopt=install_weak_deps=False \
+      git make gcc gcc-c++ ca-certificates \
+  && dnf clean all \
+  && rm -rf /var/cache/dnf \
+  && mkdir -p /work
 
-USER truffleruby
 WORKDIR /work
 
-COPY --chown=truffleruby:truffleruby Gemfile Gemfile.lock ./
-RUN bundle config set --local without 'development' \
-  && bundle install
+COPY Gemfile Gemfile.lock ./
+# BUNDLE_WITHOUT (env) is intentionally used instead of `bundle config --local`,
+# because `--local` writes to /work/.bundle/config which gets shadowed by the
+# `.:/work` bind mount at runtime, causing development gems to be required.
+RUN bundle install
 
-COPY --chown=truffleruby:truffleruby . .
+COPY . .
 
 CMD ["bundle", "exec", "bin/bench"]

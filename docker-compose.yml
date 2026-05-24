@@ -23,7 +23,7 @@ services:
     working_dir: /work
     volumes:
       - .:/work
-      - bundle-truffleruby:/home/truffleruby/.gem
+      - bundle-truffleruby:/usr/local/bundle
     environment:
       RUBY_BENCH_RUNTIME: "truffleruby"
       RUBY_BENCH_RESULT_PATH: "/work/results/truffleruby.json"
