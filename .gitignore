@@ -30,3 +30,6 @@ sorbet/tapioca/require.rb
 
 # OS
 .DS_Store
+
+# Playwright MCP runtime artifacts
+.playwright-mcp/

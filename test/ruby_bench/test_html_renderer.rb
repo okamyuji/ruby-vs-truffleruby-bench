@@ -71,4 +71,61 @@ class RubyBenchHtmlRendererTest < Minitest::Test
       assert_match(/<!doctype html>/i, File.read(f.path))
     end
   end
+
+  def test_render_uses_single_column_vertical_layout
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/flex-direction:\s*column/, html, "charts セクションは縦並びレイアウト")
+  end
+
+  def test_render_increases_chartjs_default_font_size
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/Chart\.defaults\.font\.size\s*=\s*1[4-9]/, html, "Chart.js のデフォルトフォントサイズを 14+ に引き上げる")
+  end
+
+  def test_render_includes_wall_time_annotation
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/benchmark-ips の計測ウィンドウ/, html, "wall_time_s の注釈で benchmark-ips の挙動を説明")
+  end
+
+  def test_render_includes_alloc_uninstrumented_note
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/TruffleRuby は ObjectSpace 計装非対応/, html, "alloc セクションで TruffleRuby 計装非対応を明示")
+  end
+
+  def test_render_nulls_out_allocations_total_for_truffleruby
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+    json_match = html.match(%r{<script id="payloads-json"[^>]*>(.*?)</script>}m)
+
+    refute_nil(json_match, "payloads-json タグが存在する")
+    payload = JSON.parse(json_match[1])
+
+    assert_equal(200, payload["values"]["allocations_total"]["mri"]["fibonacci"], "MRI の allocations_total は数値を保持")
+    assert_nil(payload["values"]["allocations_total"]["truffleruby"]["fibonacci"], "TruffleRuby の allocations_total は null")
+  end
+
+  def test_render_includes_summary_table_structure
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/<table class="summary">/, html, "数値テーブルを含む")
+    assert_match(/fibonacci/, html, "アルゴリズム行を含む")
+  end
+
+  def test_render_summary_table_columns_and_na_marker
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(%r{<th>ips</th>}, html, "ips 列を含む")
+    assert_match(%r{<th>RSS\(MB\)</th>}, html, "RSS(MB) 列を含む")
+    assert_match(%r{<td class="na">N/A</td>}, html, "TruffleRuby の alloc セルは N/A")
+  end
+
+  def test_render_chart_canvases_have_explicit_height
+    html = RubyBench::HtmlRenderer.new([sample_payload("mri"), sample_payload("truffleruby")]).render
+
+    assert_match(/\.chart-wrap\s*\{[^}]*height:\s*46[0-9]px/, html, "chart-wrap で高さを 460px+ 明示")
+    assert_match(/maintainAspectRatio:\s*false/, html, "縦圧縮を防ぐため maintainAspectRatio: false")
+  end
 end
