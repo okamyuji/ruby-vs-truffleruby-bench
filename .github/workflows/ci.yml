@@ -16,7 +16,7 @@ jobs:
     name: Quality gates (MRI)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4.1"
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build images
         run: docker compose build
 
@@ -50,7 +50,7 @@ jobs:
     env:
       RVTB_RUNTIME: ${{ matrix.runtime }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # docker-build ジョブの成果イメージは別 runner にあるため、matrix runner では再度 build が必要です。
       # registry や buildx cache を導入していないため、現状はジョブ間で重複ビルドを許容しています。
       - name: Build target image
@@ -60,7 +60,7 @@ jobs:
       - name: Run smoke bench
         run: docker compose run --rm "$RVTB_RUNTIME" bundle exec bin/bench --smoke -o "results/$RVTB_RUNTIME.json"
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: results-${{ matrix.runtime }}
           path: results/${{ matrix.runtime }}.json
