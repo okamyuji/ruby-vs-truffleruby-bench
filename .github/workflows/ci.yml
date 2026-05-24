@@ -1,13 +1,12 @@
 name: ruby-vs-truffleruby-bench CI
 
+# 当リポジトリ自身がベンチプロジェクトのルートのため、
+# paths/working-directory に "ruby-vs-truffleruby-bench/" を付けるとマッチせず
+# Actions が一切発火しなくなる (過去のコミットで該当)。リポジトリルート基準で記述する。
 on:
   push:
     branches: [main]
-    paths:
-      - "ruby-vs-truffleruby-bench/**"
   pull_request:
-    paths:
-      - "ruby-vs-truffleruby-bench/**"
 
 permissions:
   contents: read
@@ -16,16 +15,12 @@ jobs:
   quality:
     name: Quality gates (MRI)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ruby-vs-truffleruby-bench
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4.1"
           bundler-cache: true
-          working-directory: ruby-vs-truffleruby-bench
       - name: syntax_tree check
         run: bundle exec stree check 'lib/**/*.rb' 'test/**/*.rb' 'bin/*'
       - name: RuboCop
@@ -42,7 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build images
-        working-directory: ruby-vs-truffleruby-bench
         run: docker compose build
 
   smoke-bench:
@@ -60,15 +54,13 @@ jobs:
       # docker-build ジョブの成果イメージは別 runner にあるため、matrix runner では再度 build が必要です。
       # registry や buildx cache を導入していないため、現状はジョブ間で重複ビルドを許容しています。
       - name: Build target image
-        working-directory: ruby-vs-truffleruby-bench
         run: docker compose build "$RVTB_RUNTIME"
       # -o は docker-compose.yml で設定した RUBY_BENCH_RESULT_PATH を意図的に上書きし、
       # アーティファクトのアップロードパスを matrix.runtime と一致させるための指定です。
       - name: Run smoke bench
-        working-directory: ruby-vs-truffleruby-bench
         run: docker compose run --rm "$RVTB_RUNTIME" bundle exec bin/bench --smoke -o "results/$RVTB_RUNTIME.json"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: results-${{ matrix.runtime }}
-          path: ruby-vs-truffleruby-bench/results/${{ matrix.runtime }}.json
+          path: results/${{ matrix.runtime }}.json
