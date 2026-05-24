@@ -1,26 +1,49 @@
-FROM ghcr.io/graalvm/truffleruby-community:24.1.1
+FROM buildpack-deps:stable
+
+# TruffleRuby 34.x は GraalVM 系の新しいバージョニング規約 (AB.C.D の "A.B" が CRuby
+# 互換版を意味する) に従い、CRuby 3.4 互換の系列です。公式の
+# https://github.com/truffleruby/truffleruby/blob/master/tool/dockerfiles/stable.dockerfile
+# を参考にしつつ、ベンチ用途に合わせて bundle 設定と SHA-256 検証を加えています。
+#
+# ghcr.io/graalvm/truffleruby-community:* は執筆時点でまだ Ruby 3.3 までしか
+# 公開されていないため、Ruby 3.4 同士を比較する本リポジトリでは release アセット
+# (truffleruby-community-34.0.1-linux-{arch}.tar.gz) を直接展開しています。
 
 ENV LANG=C.UTF-8 \
+    GEM_HOME=/usr/local/bundle \
     BUNDLE_PATH=/usr/local/bundle \
+    BUNDLE_SILENCE_ROOT_WARNING=1 \
+    BUNDLE_APP_CONFIG=/usr/local/bundle \
     BUNDLE_JOBS=4 \
     BUNDLE_RETRY=3 \
     BUNDLE_WITHOUT=development \
-    TRUFFLERUBYOPT="--engine.Mode=latency"
+    TRUFFLERUBYOPT="--engine.Mode=latency" \
+    PATH=/usr/local/bundle/bin:/usr/local/bin:/usr/bin:/bin
 
-# Base image is Oracle Linux 9 (dnf-based), and ships gcc/curl but not git/make.
-# Install only the missing build deps for native gem compilation.
-RUN dnf install -y --setopt=install_weak_deps=False \
-      git make gcc gcc-c++ ca-certificates \
-  && dnf clean all \
-  && rm -rf /var/cache/dnf \
-  && mkdir -p /work
+ARG TRUFFLERUBY_VERSION=34.0.1
+ARG TRUFFLERUBY_SHA256_AARCH64=8b1156eda10f3a00c56544f91c3f06735db49fe5850d801bb2760ab0b8315441
+ARG TRUFFLERUBY_SHA256_AMD64=d73540e36d457555d57c7bff7c35805d05388912fb54a880dea10cc44d001f41
+
+RUN set -eux; \
+    case "$(uname -m)" in \
+      x86_64) arch=amd64; sha="$TRUFFLERUBY_SHA256_AMD64" ;; \
+      aarch64) arch=aarch64; sha="$TRUFFLERUBY_SHA256_AARCH64" ;; \
+      *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;; \
+    esac; \
+    url="https://github.com/truffleruby/truffleruby/releases/download/graal-${TRUFFLERUBY_VERSION}/truffleruby-community-${TRUFFLERUBY_VERSION}-linux-${arch}.tar.gz"; \
+    wget -q -O /tmp/tr.tar.gz "$url"; \
+    echo "${sha}  /tmp/tr.tar.gz" | sha256sum -c -; \
+    tar -xzf /tmp/tr.tar.gz -C /usr/local --strip-components=1; \
+    rm /tmp/tr.tar.gz; \
+    /usr/local/lib/truffle/post_install_hook.sh; \
+    ruby --version; \
+    gem --version; \
+    bundle --version; \
+    mkdir -p "$GEM_HOME" /work && chmod 777 "$GEM_HOME"
 
 WORKDIR /work
 
 COPY Gemfile Gemfile.lock ./
-# BUNDLE_WITHOUT (env) is intentionally used instead of `bundle config --local`,
-# because `--local` writes to /work/.bundle/config which gets shadowed by the
-# `.:/work` bind mount at runtime, causing development gems to be required.
 RUN bundle install
 
 COPY . .
