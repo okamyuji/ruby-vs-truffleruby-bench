@@ -4,5 +4,6 @@
 --ignore=/results
 --ignore=/tmp
 --ignore=/.bundle
+--ignore=/vendor
 --ignore=/docker
 --ignore=/test
