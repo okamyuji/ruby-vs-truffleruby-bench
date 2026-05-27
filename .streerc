@@ -1,1 +1,2 @@
 --print-width=130
+--ignore-files=bin/*.sh

@@ -21,14 +21,15 @@ jobs:
         with:
           ruby-version: "3.4.9"
           bundler-cache: true
+      # CI とローカルで同じ品質ゲートになるよう、コマンドを直書きせず Makefile のターゲットを呼ぶ。
       - name: syntax_tree check
-        run: bundle exec stree check 'lib/**/*.rb' 'test/**/*.rb' 'bin/*'
+        run: make format-check
       - name: RuboCop
-        run: bundle exec rubocop
+        run: make lint
       - name: Sorbet typecheck
-        run: bundle exec srb tc
+        run: make typecheck
       - name: Minitest
-        run: bundle exec rake test
+        run: make test
 
   docker-build:
     name: Docker build (both runtimes)
@@ -46,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runtime: [ruby34, truffleruby34]
+        runtime: [ruby34, ruby34-yjit, truffleruby34]
     env:
       RVTB_RUNTIME: ${{ matrix.runtime }}
     steps:
