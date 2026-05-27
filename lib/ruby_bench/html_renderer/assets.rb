@@ -52,6 +52,7 @@ module RubyBench
         table.summary th:first-child, table.summary td:first-child,
         table.summary th:nth-child(2), table.summary td:nth-child(2) { text-align: left; }
         table.summary td.runtime-mri { color: #b91c1c; }
+        table.summary td.runtime-mri-yjit { color: #b45309; }
         table.summary td.runtime-truffleruby { color: #1d4ed8; }
         table.summary td.na { color: #9ca3af; font-style: italic; }
         details { margin-top: 32px; }
@@ -68,7 +69,7 @@ module RubyBench
           Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", sans-serif';
           Chart.defaults.font.size = 14;
           Chart.defaults.color = "#111827";
-          const palette = { mri: "#ef4444", truffleruby: "#3b82f6" };
+          const palette = { mri: "#ef4444", "mri-yjit": "#f59e0b", truffleruby: "#3b82f6" };
           const charts = %CHARTS_CONFIG%;
           charts.forEach(function (c) {
             const ds = data.runtimes.map(function (rt) {
@@ -98,6 +99,101 @@ module RubyBench
               }
             });
           });
+        })();
+      JS
+
+      # EXTRAS_SCRIPT は起動時間 (棒)・ウォームアップ曲線 (折れ線)・並列スケーリング (棒) を描画する。
+      # extras-json タグが無い、または Chart 未ロードのときは何もしない。
+      EXTRAS_SCRIPT = <<~JS
+        (function () {
+          if (typeof Chart === "undefined") return;
+          const el = document.getElementById("extras-json");
+          if (!el) return;
+          const extras = JSON.parse(el.textContent);
+          const palette = { mri: "#ef4444", "mri-yjit": "#f59e0b", truffleruby: "#3b82f6" };
+          const colorOf = function (rt) { return palette[rt] || "#6b7280"; };
+
+          if (extras.startup) {
+            const s = extras.startup;
+            const ds = s.runtimes.map(function (rt) {
+              return {
+                label: rt,
+                data: s.scenarios.map(function (sc) { return s.values[sc][rt]; }),
+                backgroundColor: colorOf(rt),
+                borderRadius: 4,
+                maxBarThickness: 64
+              };
+            });
+            new Chart(document.getElementById("startup-chart"), {
+              type: "bar",
+              data: { labels: s.scenarios, datasets: ds },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "top", labels: { font: { size: 14 }, padding: 16 } } },
+                scales: {
+                  x: { ticks: { font: { size: 13 } } },
+                  y: { beginAtZero: true, ticks: { font: { size: 13 } }, title: { display: true, text: "median ms" } }
+                }
+              }
+            });
+          }
+
+          if (extras.warmup) {
+            const w = extras.warmup;
+            const ds = w.runtimes.map(function (rt) {
+              return {
+                label: rt,
+                data: w.series[rt],
+                borderColor: colorOf(rt),
+                backgroundColor: colorOf(rt),
+                fill: false,
+                tension: 0.2,
+                pointRadius: 2,
+                borderWidth: 2
+              };
+            });
+            new Chart(document.getElementById("warmup-chart"), {
+              type: "line",
+              data: { labels: w.labels, datasets: ds },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "top", labels: { font: { size: 14 }, padding: 16 } } },
+                scales: {
+                  x: { ticks: { font: { size: 13 } }, title: { display: true, text: "実行回数 (回目)" } },
+                  y: { beginAtZero: true, ticks: { font: { size: 13 } }, title: { display: true, text: "wall ms / 回" } }
+                }
+              }
+            });
+          }
+
+          if (extras.parallelism) {
+            const p = extras.parallelism;
+            const labels = p.thread_counts.map(function (t) { return t + " thread"; });
+            const ds = p.runtimes.map(function (rt) {
+              return {
+                label: rt,
+                data: p.thread_counts.map(function (t) { return p.values[t][rt]; }),
+                backgroundColor: colorOf(rt),
+                borderRadius: 4,
+                maxBarThickness: 64
+              };
+            });
+            new Chart(document.getElementById("parallelism-chart"), {
+              type: "bar",
+              data: { labels: labels, datasets: ds },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "top", labels: { font: { size: 14 }, padding: 16 } } },
+                scales: {
+                  x: { ticks: { font: { size: 13 } } },
+                  y: { beginAtZero: true, ticks: { font: { size: 13 } }, title: { display: true, text: "speedup (1スレッド比)" } }
+                }
+              }
+            });
+          }
         })();
       JS
     end

@@ -17,7 +17,17 @@ OptionParser
   .parse!
 
 runner = RubyBench::Runner.new(smoke: options[:smoke])
+# 起動計測はサブプロセスなので順序非依存。ウォームアップ曲線は JIT が温まる前に取りたいので
+# run_all より先に実行する。
+runner.run_startup
+runner.run_warmup
+runner.run_parallelism
 runner.run_all
 
-RubyBench::Reporter.new(runner.harness.measurements).dump(options[:output])
+RubyBench::Reporter.new(
+  runner.harness.measurements,
+  warmup: runner.warmup,
+  startup: runner.startup,
+  parallelism: runner.parallelism
+).dump(options[:output])
 puts "wrote #{options[:output]}"

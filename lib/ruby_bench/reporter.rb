@@ -12,19 +12,33 @@ module RubyBench
     class IOFailure < StandardError
     end
 
-    sig { params(measurements: T::Array[Measurement]).void }
-    def initialize(measurements)
+    sig do
+      params(
+        measurements: T::Array[Measurement],
+        warmup: T.nilable(T::Hash[Symbol, T.untyped]),
+        startup: T.nilable(T::Hash[Symbol, T.untyped]),
+        parallelism: T.nilable(T::Hash[Symbol, T.untyped])
+      ).void
+    end
+    def initialize(measurements, warmup: nil, startup: nil, parallelism: nil)
       @measurements = measurements
+      @warmup = warmup
+      @startup = startup
+      @parallelism = parallelism
     end
 
     sig { returns(T::Hash[Symbol, T.untyped]) }
     def payload
-      {
-        schema_version: 1,
+      base = {
+        schema_version: 2,
         generated_at: Time.now.utc.iso8601,
         runtime_metadata: Runtime.metadata,
         measurements: @measurements.map(&:to_h)
       }
+      base[:warmup] = @warmup unless @warmup.nil?
+      base[:startup] = @startup unless @startup.nil?
+      base[:parallelism] = @parallelism unless @parallelism.nil?
+      base
     end
 
     sig { params(path: String).void }

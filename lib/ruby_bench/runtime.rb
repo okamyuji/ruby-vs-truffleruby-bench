@@ -7,9 +7,18 @@ module RubyBench
   module Runtime
     extend T::Sig
 
+    sig { returns(T::Boolean) }
+    def self.yjit_enabled?
+      return false unless defined?(::RubyVM::YJIT)
+
+      ::RubyVM::YJIT.enabled?
+    end
+
     sig { returns(String) }
     def self.id
-      defined?(::TruffleRuby) ? "truffleruby" : "mri"
+      return "truffleruby" if defined?(::TruffleRuby)
+
+      yjit_enabled? ? "mri-yjit" : "mri"
     end
 
     sig { returns(String) }
@@ -17,6 +26,8 @@ module RubyBench
       case id
       when "truffleruby"
         "TruffleRuby #{engine_version} (Ruby #{RUBY_VERSION})"
+      when "mri-yjit"
+        "MRI Ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL} +YJIT"
       else
         "MRI Ruby #{RUBY_VERSION}p#{RUBY_PATCHLEVEL}"
       end
@@ -36,6 +47,7 @@ module RubyBench
         engine_version: engine_version,
         ruby_version: RUBY_VERSION,
         platform: RUBY_PLATFORM,
+        yjit_enabled: yjit_enabled?,
         pid: Process.pid
       }
     end
