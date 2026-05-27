@@ -12,7 +12,8 @@ truffleruby_image="ruby-vs-truffleruby-bench/truffleruby34"
 
 image_size() {
   local size
-  size=$(docker image inspect "$1" --format '{{.Size}}' 2>/dev/null)
+  # set -e 下では代入内のコマンド置換が失敗するとスクリプトが終了し else へ到達しないため || true で握る。
+  size=$(docker image inspect "$1" --format '{{.Size}}' 2>/dev/null) || true
   if [[ -n "$size" && "$size" =~ ^[0-9]+$ ]]; then
     echo "$size"
   else

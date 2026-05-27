@@ -26,4 +26,12 @@ class RubyBenchParallelismTest < Minitest::Test
   def test_best_wall_returns_positive
     assert_operator(RubyBench::Parallelism.best_wall(10_000, 1, 1), :>, 0.0)
   end
+
+  def test_measure_raises_on_empty_thread_counts
+    assert_raises(ArgumentError) { RubyBench::Parallelism.measure(total: 1000, thread_counts: [], warmup: 0, repeats: 1) }
+  end
+
+  def test_measure_raises_on_non_positive_repeats
+    assert_raises(ArgumentError) { RubyBench::Parallelism.measure(total: 1000, thread_counts: [1], warmup: 0, repeats: 0) }
+  end
 end

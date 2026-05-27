@@ -25,11 +25,19 @@ module RubyBench
         acc
       end
 
-      # run 総仕事量 total を threads 本のスレッドへ均等分割して並列実行し、各スレッドの最終状態の和を返す。
+      # run 総仕事量 total を threads 本のスレッドへ分割して並列実行し、各スレッドの最終状態の和を返す。
+      # 端数 (total % threads) は先頭スレッドへ1ずつ割り振り、スレッド数によらず総仕事量を厳密に保つ。
       def self.run(total:, threads:)
-        per = total / threads
+        raise ArgumentError, "threads は1以上である必要があります" if threads < 1
+
+        base = total / threads
+        remainder = total % threads
         results = Array.new(threads, 0)
-        workers = (0...threads).map { |idx| Thread.new(idx) { |t| results[t] = work_chunk(t + 1, per) } }
+        workers =
+          (0...threads).map do |idx|
+            count = base + (idx < remainder ? 1 : 0)
+            Thread.new(idx, count) { |t, c| results[t] = work_chunk(t + 1, c) }
+          end
         workers.each(&:join)
         results.sum & MASK
       end

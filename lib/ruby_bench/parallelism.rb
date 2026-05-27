@@ -20,6 +20,12 @@ module RubyBench
       )
     end
     def self.measure(total:, thread_counts:, warmup: 3, repeats: 2)
+      raise ArgumentError, "total は1以上である必要があります" if total < 1
+      raise ArgumentError, "thread_counts は空にできません" if thread_counts.empty?
+      raise ArgumentError, "thread_counts はすべて1以上である必要があります" unless thread_counts.all?(&:positive?)
+      raise ArgumentError, "warmup は0以上である必要があります" if warmup.negative?
+      raise ArgumentError, "repeats は1以上である必要があります" if repeats < 1
+
       max_threads = thread_counts.max || 1
       warmup.times { Algorithms::ParallelCpu.run(total: total, threads: max_threads) }
 

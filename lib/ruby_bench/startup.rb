@@ -21,6 +21,8 @@ module RubyBench
     # measure 各シナリオを runs 回ずつ起動し、最小/中央/最大の起動時間 (ms) をまとめて返す。
     sig { params(runs: Integer).returns(T::Array[T::Hash[Symbol, T.untyped]]) }
     def self.measure(runs:)
+      raise ArgumentError, "runs は1以上である必要があります" if runs < 1
+
       SCENARIOS.map do |name, code|
         sorted = run_samples(code, runs).sort
         { scenario: name.to_s, runs: runs, min_ms: sorted.first, median_ms: median(sorted), max_ms: sorted.last }

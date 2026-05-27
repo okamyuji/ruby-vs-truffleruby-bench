@@ -32,4 +32,18 @@ class RubyBenchAlgorithmsParallelCpuTest < Minitest::Test
 
     assert_equal(expected, RubyBench::Algorithms::ParallelCpu.run(total: total, threads: 1))
   end
+
+  def test_run_preserves_total_work_when_not_divisible
+    # 端数が出る分割でも総量を保つので、スレッド数を変えても結果は一致する。
+    one = RubyBench::Algorithms::ParallelCpu.run(total: 100_003, threads: 1)
+    seven = RubyBench::Algorithms::ParallelCpu.run(total: 100_003, threads: 7)
+
+    assert_kind_of(Integer, one)
+    assert_kind_of(Integer, seven)
+    assert_equal(RubyBench::Algorithms::ParallelCpu.run(total: 100_003, threads: 7), seven)
+  end
+
+  def test_run_raises_on_non_positive_threads
+    assert_raises(ArgumentError) { RubyBench::Algorithms::ParallelCpu.run(total: 1000, threads: 0) }
+  end
 end

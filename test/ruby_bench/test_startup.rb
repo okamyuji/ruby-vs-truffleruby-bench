@@ -32,4 +32,8 @@ class RubyBenchStartupTest < Minitest::Test
       assert_operator(entry[:min_ms], :<=, entry[:max_ms])
     end
   end
+
+  def test_measure_raises_on_non_positive_runs
+    assert_raises(ArgumentError) { RubyBench::Startup.measure(runs: 0) }
+  end
 end
