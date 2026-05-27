@@ -27,7 +27,8 @@ module RubyBench
       samples =
         thread_counts.map do |threads|
           best = best_wall(total, threads, repeats)
-          baseline = best if threads == thread_counts.first
+          # 最初に計測した best を基準値にする (thread_counts の重複や順序に左右されない)。
+          baseline ||= best
           { threads: threads, wall_s: best, speedup: speedup(baseline, best) }
         end
       { total: total, samples: samples }

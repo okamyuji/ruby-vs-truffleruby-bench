@@ -11,7 +11,13 @@ mri_image="ruby-vs-truffleruby-bench/ruby34"
 truffleruby_image="ruby-vs-truffleruby-bench/truffleruby34"
 
 image_size() {
-  docker image inspect "$1" --format '{{.Size}}' 2>/dev/null || echo "null"
+  local size
+  size=$(docker image inspect "$1" --format '{{.Size}}' 2>/dev/null)
+  if [[ -n "$size" && "$size" =~ ^[0-9]+$ ]]; then
+    echo "$size"
+  else
+    echo "null"
+  fi
 }
 
 mri_size="$(image_size "$mri_image")"

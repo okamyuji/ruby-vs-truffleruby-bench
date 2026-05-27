@@ -17,12 +17,16 @@ module RubyBench
         \s(?<bytes>\d+)
       /x
 
+      # HTTP_METHODS / STATUS_CODES build_line がホットループで毎回配列を確保しないよう定数化する。
+      HTTP_METHODS = %w[GET POST PUT DELETE].freeze
+      STATUS_CODES = [200, 201, 301, 404, 500].freeze
+
       # build_line index 番目の合成アクセスログ行を返す。
       def self.build_line(index)
         ip = "#{index % 256}.#{(index / 256) % 256}.0.1"
-        method = %w[GET POST PUT DELETE][index % 4]
+        method = HTTP_METHODS[index % 4]
         path = "/api/v1/resource/#{index % 1000}?page=#{index % 50}"
-        status = [200, 201, 301, 404, 500][index % 5]
+        status = STATUS_CODES[index % 5]
         bytes = (index * 17) % 9000
         seconds = format("%02d", index % 60)
         %(#{ip} - - [10/Oct/2026:13:55:#{seconds} +0900] "#{method} #{path} HTTP/1.1" #{status} #{bytes})
