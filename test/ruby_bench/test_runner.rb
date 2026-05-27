@@ -9,7 +9,7 @@ class RubyBenchRunnerTest < Minitest::Test
     runner.run_all
     algos = runner.harness.measurements.map(&:algorithm).sort
 
-    assert_equal(%w[fibonacci mandelbrot nbody sieve], algos)
+    assert_equal(%w[fibonacci json mandelbrot nbody regexp sieve], algos)
   end
 
   def test_smoke_inputs_finish_under_configured_timeout

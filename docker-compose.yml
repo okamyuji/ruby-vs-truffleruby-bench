@@ -14,6 +14,22 @@ services:
       RUBY_BENCH_RESULT_PATH: "/work/results/mri.json"
     command: ["bundle", "exec", "bin/bench"]
 
+  ruby34-yjit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mri
+    image: ruby-vs-truffleruby-bench/ruby34
+    container_name: rvtb-ruby34-yjit
+    working_dir: /work
+    volumes:
+      - .:/work
+      - bundle-mri:/usr/local/bundle
+    environment:
+      RUBYOPT: "--yjit"
+      RUBY_BENCH_RUNTIME: "mri-yjit"
+      RUBY_BENCH_RESULT_PATH: "/work/results/mri-yjit.json"
+    command: ["bundle", "exec", "bin/bench"]
+
   truffleruby34:
     build:
       context: .

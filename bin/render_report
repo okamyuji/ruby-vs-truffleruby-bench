@@ -5,12 +5,18 @@
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "ruby_bench"
 
-if ARGV.size < 3
-  warn "Usage: bin/render_report <mri.json> <truffleruby.json> <output.html>"
+if ARGV.size < 2
+  warn "Usage: bin/render_report <result.json> [<result.json> ...] <output.html>"
   exit 1
 end
 
-mri_path, truffleruby_path, output_path = ARGV
-payloads = [mri_path, truffleruby_path].map { |p| RubyBench::Reporter.load(p) }
-RubyBench::HtmlRenderer.new(payloads).write(output_path)
+*input_paths, output_path = ARGV
+payloads = input_paths.map { |p| RubyBench::Reporter.load(p) }
+
+# 出力先と同じディレクトリの image_sizes.json があれば読み込んでイメージサイズ表を描画する。
+require "json"
+image_sizes_path = File.join(File.dirname(output_path), "image_sizes.json")
+image_sizes = (JSON.parse(File.binread(image_sizes_path), symbolize_names: true) if File.exist?(image_sizes_path))
+
+RubyBench::HtmlRenderer.new(payloads, image_sizes: image_sizes).write(output_path)
 puts "wrote #{output_path}"

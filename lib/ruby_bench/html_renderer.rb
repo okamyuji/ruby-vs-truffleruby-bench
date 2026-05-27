@@ -5,6 +5,7 @@ require "json"
 require "cgi"
 require "fileutils"
 require_relative "html_renderer/assets"
+require_relative "html_renderer/extras"
 
 module RubyBench
   class HtmlRenderer
@@ -57,9 +58,10 @@ module RubyBench
       { key: "allocations_total", label: "alloc total", fmt: :int }
     ].freeze
 
-    sig { params(payloads: T::Array[T::Hash[Symbol, T.untyped]]).void }
-    def initialize(payloads)
+    sig { params(payloads: T::Array[T::Hash[Symbol, T.untyped]], image_sizes: T.nilable(T::Hash[Symbol, T.untyped])).void }
+    def initialize(payloads, image_sizes: nil)
       @payloads = payloads
+      @image_sizes = image_sizes
     end
 
     sig { returns(String) }
@@ -115,7 +117,7 @@ module RubyBench
             <section class="charts">
               #{CHARTS.map { |c| chart_card_html(c) }.join("\n")}
             </section>
-
+        #{extras_block_html}
             <h2>主要指標 (数値テーブル)</h2>
             #{summary_table_html}
 
@@ -127,8 +129,35 @@ module RubyBench
 
           <script id="payloads-json" type="application/json">#{data_json}</script>
           <script>#{chart_script}</script>
+        #{extras_script_html}
         </body>
       BODY
+    end
+
+    # extras_block_html クラウド観点の追加指標 (起動時間・ウォームアップ・イメージサイズ) セクション。
+    # データが無ければ空文字を返し、既存レイアウトに影響しない。
+    sig { returns(String) }
+    def extras_block_html
+      return "" unless Extras.any?(@payloads, @image_sizes)
+
+      <<~BLOCK
+
+        <h2>クラウド観点の追加指標</h2>
+        <section class="charts">
+        #{Extras.sections_html(@payloads, @image_sizes)}
+        </section>
+      BLOCK
+    end
+
+    # extras_script_html 追加指標グラフ用の埋め込み JSON と描画スクリプト。データが無ければ空。
+    sig { returns(String) }
+    def extras_script_html
+      return "" unless Extras.startup?(@payloads) || Extras.warmup?(@payloads) || Extras.parallelism?(@payloads)
+
+      <<~SCRIPT
+        <script id="extras-json" type="application/json">#{Extras.extras_json(@payloads)}</script>
+          <script>#{Assets::EXTRAS_SCRIPT}</script>
+      SCRIPT
     end
 
     sig { returns(String) }
