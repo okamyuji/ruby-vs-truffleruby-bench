@@ -12,6 +12,12 @@ permissions:
   contents: read
 
 jobs:
+  # 純Rubyベンチプロジェクトのため rails-ci.yml は前提が合わず使わない。
+  # 共通化は gitleaks (security-scan.yml) のみ。
+  security:
+    name: gitleaks secret scan
+    uses: okamyuji/reusable-workflows/.github/workflows/security-scan.yml@v1
+
   quality:
     name: Quality gates (MRI)
     runs-on: ubuntu-latest
