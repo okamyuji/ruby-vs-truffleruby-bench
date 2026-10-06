@@ -16,11 +16,11 @@ jobs:
   # 共通化は gitleaks (security-scan.yml) のみ。
   security:
     name: gitleaks secret scan
-    uses: okamyuji/reusable-workflows/.github/workflows/security-scan.yml@v1
+    uses: okamyuji/reusable-workflows/.github/workflows/security-scan.yml@test/ubuntu-26.04
 
   quality:
     name: Quality gates (MRI)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
@@ -39,7 +39,7 @@ jobs:
 
   docker-build:
     name: Docker build (both runtimes)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: quality
     steps:
       - uses: actions/checkout@v6
@@ -48,7 +48,7 @@ jobs:
 
   smoke-bench:
     name: Smoke bench (matrix)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: docker-build
     strategy:
       fail-fast: false
