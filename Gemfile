@@ -17,14 +17,14 @@ gem "minitest-reporters", "~> 1.7"
 gem "rake", "~> 13.2"
 
 # Type runtime (always loaded but checks disabled at runtime for perf)
-gem "sorbet-runtime", "~> 0.5"
+gem "sorbet-runtime", "~> 0.6"
 
 # Development tools (skipped on TruffleRuby container via bundle config without 'development')
 group :development do
-  gem "rubocop", "~> 1.68"
-  gem "rubocop-minitest", "~> 0.36"
-  gem "rubocop-performance", "~> 1.22"
+  gem "rubocop", "~> 1.92"
+  gem "rubocop-minitest", "~> 0.41"
+  gem "rubocop-performance", "~> 1.27"
   gem "sorbet", "~> 0.5"
   gem "syntax_tree", "~> 6.2"
-  gem "tapioca", "~> 0.16"
+  gem "tapioca", "~> 0.20"
 end
