@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-source "https://rubygems.org"
+# Dependabot の cooldown は Bundler の解決に渡らず、推移的な gem には効かないので、Bundler 自身の待機をかける
+source "https://rubygems.org", cooldown: 3
 
 # TruffleRuby 24.1.x は Ruby 3.2.4 互換のため、両ランタイムを跨ぐ最小要件としてここでは >= 3.2.0 を指定します。
 # CI / Docker 側で MRI 3.4 と TruffleRuby 24.1 を明示固定し、TruffleRuby 25 以降に上げる際は本制約も >= 3.4.0 に揃えます。
